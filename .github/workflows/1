@@ -1,0 +1,35 @@
+ name: Deploy to HuggingFace Space
+
+on:
+  push:
+    branches: [ "main" ] 
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest  
+
+    steps:
+     
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      
+      - name: Login to HuggingFace Hub
+        run: |
+          pip install huggingface_hub
+          huggingface-cli login --token ${{ secrets.HF_TOKEN }}
+
+     
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ghcr.io/ansheng-us/23:latest .
+          docker push ghcr.io/ansheng-us/23:latest
+
+      
+      - name: Deploy to HF Space
+        run: |
+          huggingface-cli upload \
+            --repo-type=space \
+            --organization=ansheng123\
+            --space=23 \
+            --commit-message="Auto-deploy from GitHub Actions" \
+            .
